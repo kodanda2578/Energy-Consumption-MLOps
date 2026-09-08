@@ -1,0 +1,36 @@
+# Main Configuration File for Energy Consumption MLOps Pipeline
+
+project:
+  name: energy-consumption-mlops
+  version: 0.1.0
+  description: "Machine Learning pipeline for predicting energy consumption"
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  raw_filename: "energydata_complete.csv"
+  processed_filename: "energydata_processed.csv"
+  url: "https://archive.ics.uci.edu/static/public/374/appliances+energy+prediction.zip"
+  target_column: "Appliances"
+  datetime_column: "date"
+
+feature_engineering:
+  lags: [1, 3, 6, 12]
+  rolling_windows: [3, 6, 12]
+
+split:
+  train_ratio: 0.8
+  shuffle: false
+
+model:
+  save_dir: "models"
+  model_filename: "energy_predictor.joblib"
+  random_state: 42
+  rf_n_estimators: 100
+  rf_max_depth: 15
+  xgb_n_estimators: 100
+  xgb_learning_rate: 0.05
+  xgb_max_depth: 6
+
+reports:
+  figures_dir: "reports/figures"

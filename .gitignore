@@ -1,0 +1,53 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Data directories (keep directory structure via .gitkeep, ignore data files)
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/*.dvc
+!data/raw/.gitignore
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/*.dvc
+!data/processed/.gitignore
+
+
+# Models (keep directory structure via .gitkeep, ignore model artifacts)
+models/*
+!models/.gitkeep
+
+# Environment variables and secrets
+.env
+.env.local
+
+# MLflow logs & DVC artifacts (for upcoming phases)
+mlruns/
+mlflow.db
+*.db
+.dvc/cache/
+.dvc/tmp/
+dvc_storage/
+
+
+
+# Logs & OS generated files
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
