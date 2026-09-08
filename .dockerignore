@@ -1,0 +1,38 @@
+# Version Control & CI
+.git
+.gitignore
+.github
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Development & EDA Notebooks
+notebooks/
+reports/figures/
+
+# Raw and Processed Datasets (Managed by DVC)
+data/raw/
+data/processed/
+dvc_storage/
+.dvc/
+.dvcignore
+
+# Logs & Temporary OS Files
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE Settings
+.vscode/
+.idea/

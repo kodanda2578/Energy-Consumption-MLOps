@@ -97,12 +97,15 @@ Build an end-to-end, production-style Machine Learning system that predicts ener
   - Production RESTful prediction API (`api/main.py`)
   - MLflow `champion` model loading at application startup
   - Endpoints: `GET /`, `GET /health`, `POST /predict`, `/docs` (Swagger UI)
-- [ ] **Phase 7: Streamlit Frontend & UI**
+- [x] **Phase 7: Docker Containerization**
+  - Lightweight production container (`Dockerfile`, `.dockerignore`, `docker-compose.yml`)
+  - Container health checks and single-command orchestration
+- [ ] **Phase 8: Streamlit Frontend & UI**
   - Interactive Web App UI built with Streamlit
-- [ ] **Phase 8: Containerization, CI/CD & Monitoring**
-  - Dockerization of API & UI services
+- [ ] **Phase 9: CI/CD & System Monitoring**
   - GitHub Actions CI workflow
   - Prometheus/Grafana lightweight performance monitoring
+
 
 
 ---
@@ -250,6 +253,52 @@ A production-grade RESTful API built with **FastAPI** serves energy consumption 
      "model_alias": "champion"
    }
    ```
+
+---
+
+## 🐳 Docker Containerization
+
+The FastAPI model serving application and MLflow registered model resolution system are packaged into a production-oriented, reproducible Docker container.
+
+### Architecture Overview
+```
++---------------+     +------------------+     +-------------------+     +----------------------+     +------------------+
+| DVC Dataset   | --> | MLflow Registry  | --> | FastAPI App       | --> | Docker Container     | --> | Prediction API   |
+| (Raw Data v1) |     | (alias: champion)|     | (api/main.py)     |     | (Port 8000:8000)     |     | (POST /predict)  |
++---------------+     +------------------+     +-------------------+     +----------------------+     +------------------+
+```
+* **Why Docker is Used:** Docker eliminates "works on my machine" issues by isolating the application, dependencies, MLflow model registry artifacts, and Python environment into a lightweight, portable container.
+* **Security & Non-Root User:** The container executes under a non-root security user (`appuser`).
+* **Model Artifact Resolution inside Container:** The Docker build packages `mlflow.db` and the `mlruns/` artifact repository so `models:/EnergyConsumptionModel@champion` resolves seamlessly without requiring external cloud storage or remote servers.
+* **Health Monitoring:** Implements an automated Docker `HEALTHCHECK` querying `http://localhost:8000/health` every 30 seconds.
+
+### Exact Commands to Build and Run Container
+
+1. **Build Docker Image:**
+   ```bash
+   docker build -t energy-consumption-mlops .
+   ```
+
+2. **Run Docker Container:**
+   ```bash
+   docker run -d -p 8000:8000 --name energy_api energy-consumption-mlops
+   ```
+
+3. **Orchestrate via Docker Compose:**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Verify Container Logs:**
+   ```bash
+   docker logs energy_api
+   ```
+
+5. **Stop & Remove Container:**
+   ```bash
+   docker stop energy_api && docker rm energy_api
+   ```
+
 
 
 
