@@ -93,13 +93,17 @@ Build an end-to-end, production-style Machine Learning system that predicts ener
 - [x] **Phase 5: Data Version Control using DVC**
   - Tracking raw dataset (`data/raw/energydata_complete.csv`) using DVC
   - Local DVC remote storage (`dvc_storage/`) and checkout/pull reproducibility verification
-- [ ] **Phase 6: API Development & Streamlit Frontend**
-  - RESTful API endpoints via FastAPI
+- [x] **Phase 6: API Development with FastAPI**
+  - Production RESTful prediction API (`api/main.py`)
+  - MLflow `champion` model loading at application startup
+  - Endpoints: `GET /`, `GET /health`, `POST /predict`, `/docs` (Swagger UI)
+- [ ] **Phase 7: Streamlit Frontend & UI**
   - Interactive Web App UI built with Streamlit
-- [ ] **Phase 7: Containerization, CI/CD & Monitoring**
+- [ ] **Phase 8: Containerization, CI/CD & Monitoring**
   - Dockerization of API & UI services
   - GitHub Actions CI workflow
   - Prometheus/Grafana lightweight performance monitoring
+
 
 ---
 
@@ -177,5 +181,75 @@ MLflow is integrated into the training pipeline to provide end-to-end experiment
    * Navigate to the experiment **`Energy Consumption Prediction`**.
    * Compare runs across models using scatter plots and metric comparison tables.
    * View registered models under **Models -> EnergyConsumptionModel** to inspect versions, run history, and the active `champion` model alias.
+
+---
+
+## ⚡ FastAPI Model Serving
+
+A production-grade RESTful API built with **FastAPI** serves energy consumption predictions powered by the active MLflow registered model (`models:/EnergyConsumptionModel@champion`).
+
+### Architecture Integration & Model Loading
+```
++------------------+     +--------------------+     +------------------------+     +-------------------+
+|  DVC Raw Data    | --> | MLflow Experiments | --> | MLflow Model Registry  | --> |  FastAPI Server   |
+| (Versioned Data) |     |  (Metrics & Logs)  |     | (EnergyConsumption...  |     | (GET /, /health,  |
++------------------+     +--------------------+     |   alias: champion)     |     |  POST /predict)   |
+                                                    +------------------------+     +-------------------+
+```
+* **Why FastAPI is Used:** FastAPI provides high-performance asynchronous request handling, automatic OpenAPI/Swagger schema documentation, and robust type validation using Pydantic.
+* **Single-Load Startup (Lifespan):** The MLflow `champion` model is loaded once into memory during application startup using FastAPI's `lifespan` context manager, ensuring ultra-fast `POST /predict` inference without per-request model loading overhead.
+* **Feature Schema Validation:** `api/schemas.py` enforces validation across all 41 model input features (indoor/outdoor microclimate data, temporal calendar encodings, target lag statistics, and rolling window averages).
+
+### Key Endpoints
+
+| Endpoint | Method | Description | Response Example |
+| :--- | :--- | :--- | :--- |
+| **`/`** | `GET` | API root overview & documentation links | `{"project": "Energy Consumption...", "status": "online"}` |
+| **`/health`** | `GET` | Health status and MLflow model readiness check | `{"status": "healthy", "model_loaded": true}` |
+| **`/predict`** | `POST` | Accepts feature JSON payload and returns forecast | `{"predicted_consumption": 64.01, "model_name": "...", "model_alias": "champion"}` |
+| **`/docs`** | `GET` | Interactive Swagger UI documentation | HTML Interface |
+
+### How to Start the API & Access Documentation
+
+1. **Start Server with Uvicorn:**
+   ```bash
+   uvicorn api.main:app --reload --port 8000
+   ```
+2. **Access Interactive Swagger UI:**
+   Open browser at: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+3. **Example Prediction Request (`POST /predict`):**
+   ```json
+   {
+     "lights": 0,
+     "T1": 19.89, "RH_1": 47.59,
+     "T2": 19.2, "RH_2": 44.79,
+     "T3": 19.79, "RH_3": 44.73,
+     "T4": 19.0, "RH_4": 45.56,
+     "T5": 17.1667, "RH_5": 55.2,
+     "T6": 7.0267, "RH_6": 84.2567,
+     "T7": 17.2, "RH_7": 41.6267,
+     "T8": 18.2, "RH_8": 48.9,
+     "T9": 17.0333, "RH_9": 45.53,
+     "T_out": 6.6, "Press_mm_hg": 733.5, "RH_out": 92.0,
+     "Windspeed": 7.0, "Visibility": 63.0, "Tdewpoint": 5.3,
+     "hour": 18, "day_of_week": 0, "month": 1, "day": 11, "is_weekend": 0,
+     "sin_hour": -1.0, "cos_hour": 0.0,
+     "sin_day_of_week": 0.0, "cos_day_of_week": 1.0,
+     "appliances_lag_1": 60.0, "appliances_lag_3": 50.0,
+     "appliances_lag_6": 50.0, "appliances_lag_12": 60.0,
+     "rolling_mean_3": 53.3333, "rolling_mean_6": 55.0, "rolling_mean_12": 58.3333
+   }
+   ```
+
+4. **Example Response:**
+   ```json
+   {
+     "predicted_consumption": 64.01,
+     "model_name": "EnergyConsumptionModel",
+     "model_alias": "champion"
+   }
+   ```
+
 
 

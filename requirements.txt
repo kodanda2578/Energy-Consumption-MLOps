@@ -22,5 +22,13 @@ mlflow>=2.10.0
 # Data Versioning (DVC)
 dvc>=3.0.0
 
+# API & Model Serving
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+httpx>=0.24.0
+
+
+
 
 
