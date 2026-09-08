@@ -90,13 +90,57 @@ Build an end-to-end, production-style Machine Learning system that predicts ener
 - [x] **Phase 4: MLOps Integration (Experiment Tracking with MLflow & Versioning)**
   - Tracking hyperparameters, metrics (MAE, MSE, RMSE, R²), and artifacts with MLflow
   - Model Registry (`EnergyConsumptionModel`) and champion version alias tagging (`champion`)
-- [ ] **Phase 5: API Development & Streamlit Frontend**
+- [x] **Phase 5: Data Version Control using DVC**
+  - Tracking raw dataset (`data/raw/energydata_complete.csv`) using DVC
+  - Local DVC remote storage (`dvc_storage/`) and checkout/pull reproducibility verification
+- [ ] **Phase 6: API Development & Streamlit Frontend**
   - RESTful API endpoints via FastAPI
   - Interactive Web App UI built with Streamlit
-- [ ] **Phase 6: Containerization, CI/CD & Monitoring**
+- [ ] **Phase 7: Containerization, CI/CD & Monitoring**
   - Dockerization of API & UI services
   - GitHub Actions CI workflow
   - Prometheus/Grafana lightweight performance monitoring
+
+---
+
+## 📦 Data Version Control with DVC
+
+Data Version Control (DVC) is integrated into the repository to manage dataset versioning and ensure total data reproducibility without committing large raw data files into Git.
+
+### Why Git Alone is Not Ideal for Large Datasets
+Git is designed for text-based source code files. Storing large binary datasets directly in Git leads to:
+* Repository bloat and degraded performance.
+* Inefficient diffing and merge conflicts on large files.
+* Storage bandwidth waste on remote git providers (e.g. GitHub).
+
+### What DVC Does & How Datasets are Tracked
+* **Metadata Tracking:** DVC hashes data files (using MD5 checksums) and generates lightweight pointer files with a `.dvc` extension (e.g. `data/raw/energydata_complete.csv.dvc`).
+* **Git Integration:** Only the lightweight `.dvc` pointer files and `.dvc/config` are committed to Git. The actual heavy data files remain ignored by Git via `data/raw/.gitignore`.
+* **Local DVC Remote:** Actual raw data payloads are stored in a dedicated local DVC storage directory (`dvc_storage/`) acting as the local storage remote.
+
+### DVC vs. MLflow Responsibilities
+| Responsibility | Managed By | Description |
+| :--- | :--- | :--- |
+| **Dataset Versioning** | **DVC** | Tracks exact dataset versions, raw file hashes, and dataset storage remotes (`.dvc` pointer files). |
+| **Experiment Tracking** | **MLflow** | Tracks hyperparameters, execution metrics (RMSE, MAE, R²), diagnostic plots, and pipeline code. |
+| **Model Registry** | **MLflow** | Manages trained model artifacts, versions, and production deployment aliases (`@champion`). |
+
+### Exact Commands to Reproduce & Restore Dataset
+
+1. **Verify DVC Status:**
+   ```bash
+   dvc status
+   ```
+2. **Push Data to Local DVC Remote:**
+   ```bash
+   dvc push
+   ```
+3. **Restore Dataset from DVC Remote:**
+   ```bash
+   dvc checkout
+   # OR
+   dvc pull
+   ```
 
 ---
 
@@ -133,4 +177,5 @@ MLflow is integrated into the training pipeline to provide end-to-end experiment
    * Navigate to the experiment **`Energy Consumption Prediction`**.
    * Compare runs across models using scatter plots and metric comparison tables.
    * View registered models under **Models -> EnergyConsumptionModel** to inspect versions, run history, and the active `champion` model alias.
+
 
