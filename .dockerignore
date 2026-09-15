@@ -20,6 +20,7 @@ htmlcov/
 # Development & EDA Notebooks
 notebooks/
 reports/figures/
+mlruns/**/plots/
 
 # Raw and Processed Datasets (Managed by DVC)
 data/raw/
