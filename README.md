@@ -100,11 +100,8 @@ Build an end-to-end, production-style Machine Learning system that predicts ener
 - [x] **Phase 7: Docker Containerization**
   - Lightweight production container (`Dockerfile`, `.dockerignore`, `docker-compose.yml`)
   - Container health checks and single-command orchestration
-- [ ] **Phase 8: Streamlit Frontend & UI**
-  - Interactive Web App UI built with Streamlit
-- [ ] **Phase 9: CI/CD & System Monitoring**
-  - GitHub Actions CI workflow
-  - Prometheus/Grafana lightweight performance monitoring
+- [x] **Phase 8: GitHub Actions CI/CD Workflow**
+  - Automated testing and Docker build verification on push/pull_request to master (`.github/workflows/ci.yml`)
 
 
 
@@ -298,6 +295,23 @@ The FastAPI model serving application and MLflow registered model resolution sys
    ```bash
    docker stop energy_api && docker rm energy_api
    ```
+
+---
+
+## 🔄 GitHub Actions CI/CD Pipeline
+
+The project includes an automated Continuous Integration (CI) pipeline configured via GitHub Actions in `.github/workflows/ci.yml`.
+
+### Workflow Triggers
+* **Push** events to the `master` branch.
+* **Pull Request** events targeting the `master` branch.
+
+### Pipeline Steps & Environment
+1. **Checkout Code:** Retrieves repository files (`actions/checkout@v4`).
+2. **Set Up Python:** Configures Python 3.10 environment (`actions/setup-python@v5`).
+3. **Install Dependencies:** Upgrades `pip` and installs dependencies from `requirements.txt`.
+4. **Run Tests:** Executes the full pytest unit & integration test suite (`pytest`).
+5. **Build Docker Image:** Builds the `energy-consumption-mlops:latest` container image to verify build integrity (`docker build -t energy-consumption-mlops:latest .`).
 
 
 
