@@ -5,10 +5,14 @@ Provides functions for experiment setup, logging model runs,
 and managing the MLflow Model Registry and aliases.
 """
 
+import sys
 import os
 import sqlite3
 import mlflow
 from mlflow.tracking import MlflowClient
+
+# Ensure root directory is in sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 os.environ["MLFLOW_ALLOW_FILE_STORE"] = "true"
 
@@ -26,31 +30,31 @@ def sanitize_mlflow_db_paths(db_path: str = "mlflow.db"):
         conn = sqlite3.connect(db_path)
         cur = conn.cursor()
 
-        # Update experiments table (e.g. file:C:/.../mlruns/1 -> mlruns/1)
+        # Update experiments table (e.g. file:C:/.../mlruns/1 or /home/.../mlruns/1 -> mlruns/1)
         cur.execute("SELECT experiment_id, artifact_location FROM experiments")
         for exp_id, loc in cur.fetchall():
-            if loc and "mlruns" in loc and ("file:" in loc or ":" in loc):
+            if loc and "mlruns" in loc and not loc.startswith("mlruns"):
                 idx = loc.find("mlruns")
                 if idx != -1:
-                    new_loc = loc[idx:]
+                    new_loc = loc[idx:].replace("\\", "/")
                     cur.execute("UPDATE experiments SET artifact_location = ? WHERE experiment_id = ?", (new_loc, exp_id))
 
         # Update runs table
         cur.execute("SELECT run_uuid, artifact_uri FROM runs")
         for run_id, uri in cur.fetchall():
-            if uri and "mlruns" in uri and ("file:" in uri or ":" in uri):
+            if uri and "mlruns" in uri and not uri.startswith("mlruns"):
                 idx = uri.find("mlruns")
                 if idx != -1:
-                    new_uri = uri[idx:]
+                    new_uri = uri[idx:].replace("\\", "/")
                     cur.execute("UPDATE runs SET artifact_uri = ? WHERE run_uuid = ?", (new_uri, run_id))
 
         # Update model_versions table
         cur.execute("SELECT name, version, storage_location FROM model_versions")
         for name, version, loc in cur.fetchall():
-            if loc and "mlruns" in loc and ("file:" in loc or ":" in loc):
+            if loc and "mlruns" in loc and not loc.startswith("mlruns"):
                 idx = loc.find("mlruns")
                 if idx != -1:
-                    new_loc = loc[idx:]
+                    new_loc = loc[idx:].replace("\\", "/")
                     cur.execute("UPDATE model_versions SET storage_location = ? WHERE name = ? AND version = ?", (new_loc, name, version))
 
         conn.commit()
@@ -87,7 +91,6 @@ def setup_mlflow_experiment(experiment_name: str = "Energy Consumption Predictio
         sanitize_mlflow_db_paths(db_file)
 
     return experiment_id
-
 
 
 def log_model_run(
@@ -155,7 +158,6 @@ def log_model_run(
             skops_trusted_types=skops_trusted
         )
 
-
         return run_id
 
 
@@ -214,4 +216,3 @@ def load_registered_model(model_name: str = "EnergyConsumptionModel", alias: str
     """
     model_uri = f"models:/{model_name}@{alias}"
     return mlflow.pyfunc.load_model(model_uri)
-

@@ -4,7 +4,12 @@ Data Loading Module for Energy Consumption Prediction Pipeline.
 Provides reproducible dataset acquisition and loading functionality.
 """
 
+import sys
 import os
+
+# Ensure root directory is in sys.path for direct invocation
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import io
 import zipfile
 import urllib.request

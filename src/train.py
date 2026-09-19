@@ -6,7 +6,12 @@ evaluates metrics on test set, selects the best performing model,
 and serializes the full pipeline artifact using joblib.
 """
 
+import sys
 import os
+
+# Ensure root directory is in sys.path for direct invocation
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import joblib
 import pandas as pd
 import numpy as np
@@ -198,4 +203,3 @@ def train_models(config_path: str = "configs/config.yaml"):
 
 if __name__ == "__main__":
     train_models()
-
