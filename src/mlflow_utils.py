@@ -192,11 +192,11 @@ def log_model_run(
         if feature_importance_plot and os.path.exists(feature_importance_plot):
             mlflow.log_artifact(feature_importance_plot, artifact_path="plots")
 
-        # 5. Log Pipeline Model Artifact
+        # 5. Log Pipeline Model Artifact using 'name' parameter
         skops_trusted = ["xgboost.core.Booster", "xgboost.sklearn.XGBRegressor"]
         mlflow.sklearn.log_model(
             sk_model=pipeline,
-            artifact_path="model",
+            name="model",
             input_example=None,
             skops_trusted_types=skops_trusted
         )
