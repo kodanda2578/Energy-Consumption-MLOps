@@ -5,7 +5,14 @@ Calculates regression performance metrics (MAE, MSE, RMSE, R²) and generates
 diagnostic diagnostic plots saved in reports/figures/.
 """
 
+import sys
 import os
+
+# Ensure project root is in sys.path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 import yaml
 import numpy as np
 import pandas as pd
@@ -15,7 +22,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from src.data_loader import load_config
-
 
 
 def evaluate_predictions(y_true, y_pred) -> dict:
@@ -127,4 +133,3 @@ def generate_feature_importance_plot(model, feature_names: list, model_name: str
     plt.savefig(plot_path)
     plt.close()
     return plot_path
-

@@ -5,7 +5,14 @@ Includes data cleaning, temporal feature extraction, lag and rolling statistics,
 and strict data leakage prevention mechanisms.
 """
 
+import sys
 import os
+
+# Ensure project root is in sys.path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 import yaml
 import numpy as np
 import pandas as pd
