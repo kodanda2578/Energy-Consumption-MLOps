@@ -12,17 +12,44 @@ import mlflow
 from mlflow.tracking import MlflowClient
 
 # Ensure root directory is in sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 os.environ["MLFLOW_ALLOW_FILE_STORE"] = "true"
 
+# Project-root-anchored MLflow SQLite DB file path
+MLFLOW_DB_PATH = os.path.join(PROJECT_ROOT, "mlflow.db")
 
-def sanitize_mlflow_db_paths(db_path: str = "mlflow.db"):
+
+def get_tracking_uri() -> str:
+    """
+    Get the deterministic MLflow tracking URI anchored to the project root.
+    Formats as: sqlite:///... with POSIX slashes on both Windows and Linux.
+    """
+    normalized_path = os.path.abspath(MLFLOW_DB_PATH).replace("\\", "/")
+    return f"sqlite:///{normalized_path}"
+
+
+def get_db_path_from_uri(tracking_uri: str) -> str:
+    """
+    Extract the local file path from a sqlite:/// URI.
+    """
+    if tracking_uri.startswith("sqlite:///"):
+        path = tracking_uri[len("sqlite:///")]
+        return os.path.abspath(path)
+    return MLFLOW_DB_PATH
+
+
+def sanitize_mlflow_db_paths(db_path: str = None):
     """
     Ensure all artifact URIs and locations in MLflow SQLite database use relative paths,
     stripping environment-specific absolute path prefixes. This guarantees portability
     across OS environments (e.g. Windows native vs Linux Docker container).
     """
+    if db_path is None:
+        db_path = MLFLOW_DB_PATH
+
     if not os.path.exists(db_path):
         return
 
@@ -63,22 +90,37 @@ def sanitize_mlflow_db_paths(db_path: str = "mlflow.db"):
         print(f"[WARNING] MLflow DB path sanitization warning: {e}")
 
 
-def setup_mlflow_experiment(experiment_name: str = "Energy Consumption Prediction", tracking_uri: str = "sqlite:///mlflow.db"):
+def setup_mlflow_experiment(experiment_name: str = "Energy Consumption Prediction", tracking_uri: str = None):
     """
-    Configure MLflow local tracking URI and set active experiment.
+    Configure MLflow tracking URI, registry URI, environment variables,
+    and active experiment using the project-root anchored database.
 
     Args:
         experiment_name (str): Name of the MLflow experiment.
-        tracking_uri (str): Local directory or URI for MLflow tracking logs.
+        tracking_uri (str, optional): Explicit tracking URI. Defaults to project-root anchored SQLite DB.
 
     Returns:
         str: Active experiment ID.
     """
-    if tracking_uri.startswith("sqlite:///"):
-        db_file = tracking_uri.replace("sqlite:///", "")
+    if tracking_uri is None:
+        tracking_uri = get_tracking_uri()
+
+    # 1. Set environment variables so all sub-modules and MLflow clients inherit the URI
+    os.environ["MLFLOW_TRACKING_URI"] = tracking_uri
+    os.environ["MLFLOW_ALLOW_FILE_STORE"] = "true"
+
+    # 2. Sanitize database paths if using SQLite
+    if "sqlite" in tracking_uri:
+        db_file = get_db_path_from_uri(tracking_uri)
         sanitize_mlflow_db_paths(db_file)
 
+    # 3. Set MLflow tracking and registry URIs explicitly
     mlflow.set_tracking_uri(tracking_uri)
+    try:
+        mlflow.set_registry_uri(tracking_uri)
+    except Exception:
+        pass
+
     experiment = mlflow.get_experiment_by_name(experiment_name)
     if experiment is None:
         experiment_id = mlflow.create_experiment(experiment_name)
@@ -86,8 +128,9 @@ def setup_mlflow_experiment(experiment_name: str = "Energy Consumption Predictio
         experiment_id = experiment.experiment_id
 
     mlflow.set_experiment(experiment_name)
-    if tracking_uri.startswith("sqlite:///"):
-        db_file = tracking_uri.replace("sqlite:///", "")
+
+    if "sqlite" in tracking_uri:
+        db_file = get_db_path_from_uri(tracking_uri)
         sanitize_mlflow_db_paths(db_file)
 
     return experiment_id
@@ -214,5 +257,6 @@ def load_registered_model(model_name: str = "EnergyConsumptionModel", alias: str
     Returns:
         Loaded PyFunc model instance.
     """
+    setup_mlflow_experiment(experiment_name="Energy Consumption Prediction")
     model_uri = f"models:/{model_name}@{alias}"
     return mlflow.pyfunc.load_model(model_uri)

@@ -37,15 +37,25 @@ jobs:
           python -c "
           import os, mlflow
           from mlflow.tracking import MlflowClient
+          from src.mlflow_utils import setup_mlflow_experiment, get_tracking_uri
 
-          assert os.path.exists('mlflow.db'), 'mlflow.db does not exist!'
-          assert os.path.exists('mlruns'), 'mlruns/ directory does not exist!'
+          tracking_uri = get_tracking_uri()
+          setup_mlflow_experiment('Energy Consumption Prediction')
 
-          mlflow.set_tracking_uri('sqlite:///mlflow.db')
+          print('=' * 60)
+          print('[CI DIAGNOSTIC] Current Working Directory:', os.getcwd())
+          print('[CI DIAGNOSTIC] Resolved MLflow Tracking URI:', tracking_uri)
+          print('[CI DIAGNOSTIC] Active MLflow Registry URI:', mlflow.get_registry_uri())
+          print('=' * 60)
+
           client = MlflowClient()
+          reg_models = [m.name for m in client.search_registered_models()]
+          print('[CI DIAGNOSTIC] Registered Models:', reg_models)
+          assert 'EnergyConsumptionModel' in reg_models, 'EnergyConsumptionModel not found in registry!'
+
           model_version = client.get_model_version_by_alias('EnergyConsumptionModel', 'champion')
           assert model_version is not None, 'champion alias does not exist in MLflow registry!'
-          assert model_version.name == 'EnergyConsumptionModel', 'Model name mismatch!'
+          print('[CI DIAGNOSTIC] Champion Version:', model_version.version)
 
           model = mlflow.pyfunc.load_model('models:/EnergyConsumptionModel@champion')
           assert model is not None, 'Failed to load champion model!'

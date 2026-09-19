@@ -12,7 +12,7 @@ import pandas as pd
 import mlflow
 
 from api.schemas import EnergyPredictionRequest, EnergyPredictionResponse, HealthResponse
-from src.mlflow_utils import setup_mlflow_experiment
+from src.mlflow_utils import setup_mlflow_experiment, load_registered_model
 
 
 # Global dictionary holding application model state
@@ -32,10 +32,10 @@ async def lifespan(app: FastAPI):
     """
     try:
         os.environ["MLFLOW_ALLOW_FILE_STORE"] = "true"
-        setup_mlflow_experiment("Energy Consumption Prediction", tracking_uri="sqlite:///mlflow.db")
+        setup_mlflow_experiment("Energy Consumption Prediction")
         model_uri = f"models:/{model_state['model_name']}@{model_state['model_alias']}"
         print(f"[INFO] Loading MLflow model from registry URI: {model_uri}...")
-        model_state["model"] = mlflow.pyfunc.load_model(model_uri)
+        model_state["model"] = load_registered_model(model_name=model_state["model_name"], alias=model_state["model_alias"])
         model_state["model_loaded"] = True
         model_state["error"] = None
         print(f"[SUCCESS] MLflow model '{model_state['model_name']}' (@{model_state['model_alias']}) loaded successfully.")
