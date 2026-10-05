@@ -22,9 +22,8 @@ notebooks/
 reports/figures/
 mlruns/**/plots/
 
-# Raw and Processed Datasets (Managed by DVC)
+# Raw Datasets (Managed by DVC)
 data/raw/
-data/processed/
 dvc_storage/
 .dvc/
 .dvcignore
