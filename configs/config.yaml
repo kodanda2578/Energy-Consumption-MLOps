@@ -34,3 +34,10 @@ model:
 
 reports:
   figures_dir: "reports/figures"
+  monitoring_dir: "reports/monitoring"
+
+monitoring:
+  alpha: 0.05
+  drift_threshold: 0.10
+  reports_dir: "reports/monitoring"
+

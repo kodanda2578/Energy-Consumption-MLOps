@@ -41,7 +41,9 @@ mlflow.db
 .dvc/tmp/
 dvc_storage/
 
-
+# Generated monitoring reports & figures
+reports/monitoring/*
+!reports/monitoring/.gitkeep
 
 # Logs & OS generated files
 *.log

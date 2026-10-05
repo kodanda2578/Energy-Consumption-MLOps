@@ -96,3 +96,24 @@ class HealthResponse(BaseModel):
     model_loaded: bool = Field(..., description="Whether the champion MLflow model is loaded and ready")
     model_name: str = Field(..., description="Name of the loaded model")
     model_alias: str = Field(..., description="Alias of the loaded model")
+
+
+class MonitoringSummary(BaseModel):
+    """
+    Summary metrics schema for data drift monitoring.
+    """
+    total_features: int = Field(..., ge=0, description="Total number of features evaluated for data drift")
+    drifted_features: int = Field(..., ge=0, description="Number of features exhibiting statistically significant drift")
+    drift_percentage: float = Field(..., ge=0.0, le=100.0, description="Percentage of features drifted")
+    overall_drift_detected: bool = Field(..., description="Whether any feature drift was detected")
+    alpha: float = Field(default=0.05, description="Significance threshold alpha used for KS test")
+    timestamp: Optional[str] = Field(default=None, description="ISO timestamp of monitoring evaluation")
+
+
+class MonitoringResponse(BaseModel):
+    """
+    Response schema for GET /monitoring endpoint.
+    """
+    status: str = Field(default="success", description="Status of the monitoring query")
+    monitoring: MonitoringSummary
+

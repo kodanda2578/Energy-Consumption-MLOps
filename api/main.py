@@ -6,12 +6,19 @@ startup and provides RESTful prediction and health check endpoints.
 """
 
 import os
+import json
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
 import pandas as pd
 import mlflow
 
-from api.schemas import EnergyPredictionRequest, EnergyPredictionResponse, HealthResponse
+from api.schemas import (
+    EnergyPredictionRequest,
+    EnergyPredictionResponse,
+    HealthResponse,
+    MonitoringSummary,
+    MonitoringResponse
+)
 from src.mlflow_utils import setup_mlflow_experiment, load_registered_model
 
 
@@ -71,7 +78,8 @@ def read_root():
         "description": "FastAPI REST service serving MLflow registered energy prediction model.",
         "docs_url": "/docs",
         "health_url": "/health",
-        "predict_url": "/predict"
+        "predict_url": "/predict",
+        "monitoring_url": "/monitoring"
     }
 
 
@@ -87,6 +95,33 @@ def health_check():
         model_name=model_state["model_name"],
         model_alias=model_state["model_alias"]
     )
+
+
+@app.get("/monitoring", response_model=MonitoringResponse, tags=["Monitoring"])
+def get_monitoring():
+    """
+    Monitoring endpoint returning the latest data drift summary report.
+    Reads saved report summary if available, otherwise executes on-demand drift calculation.
+    """
+    try:
+        summary_path = os.path.join("reports", "monitoring", "drift_summary.json")
+        if os.path.exists(summary_path):
+            with open(summary_path, "r") as f:
+                summary_data = json.load(f)
+        else:
+            from src.monitoring import run_monitoring_pipeline
+            results = run_monitoring_pipeline(log_to_mlflow=False)
+            summary_data = results["summary"]
+
+        return MonitoringResponse(
+            status="success",
+            monitoring=MonitoringSummary(**summary_data)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Monitoring evaluation failed: {str(e)}"
+        )
 
 
 @app.post("/predict", response_model=EnergyPredictionResponse, tags=["Prediction"])
@@ -119,3 +154,4 @@ def predict_energy_consumption(payload: EnergyPredictionRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Prediction failed: {str(e)}"
         )
+

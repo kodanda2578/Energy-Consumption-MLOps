@@ -62,6 +62,10 @@ jobs:
           print('[CI VERIFICATION SUCCESS] MLflow state, champion alias, and model registry verified.')
           "
 
+      - name: Run data drift monitoring pipeline
+        run: |
+          python -c "from src.monitoring import run_monitoring_pipeline; res = run_monitoring_pipeline(); print('[CI MONITORING VERIFICATION] Summary:', res['summary'])"
+
       - name: Run pytest suite
         run: |
           pytest

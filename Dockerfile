@@ -23,6 +23,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY api/ ./api/
 COPY src/ ./src/
 COPY configs/ ./configs/
+COPY data/processed/ ./data/processed/
+COPY reports/ ./reports/
 COPY mlflow.db ./mlflow.db
 COPY mlruns/ ./mlruns/
 
