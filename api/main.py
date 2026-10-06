@@ -9,6 +9,7 @@ import os
 import json
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import mlflow
 
@@ -64,6 +65,15 @@ app = FastAPI(
     description="Production MLOps FastAPI service predicting appliance energy consumption using MLflow registered models.",
     version="1.0.0",
     lifespan=lifespan
+)
+
+# Enable CORS for local frontend development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://localhost:5174"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

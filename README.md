@@ -149,7 +149,45 @@ To ensure real-world validity in predicting time-dependent energy demand:
   - Configurable significance threshold ($\alpha = 0.05$)
   - Automated report generation (`drift_summary.json`, `drift_report.csv`, `drift_report.json`) & p-value visualization (`drift_pvalues.png`)
   - MLflow experiment tracking integration (`run_type = "data_drift_monitoring"`)
-  - RESTful FastAPI monitoring endpoint (`GET /monitoring`)
+- [x] **Phase 10: Professional React + Vite MLOps Dashboard**
+  - Modern React 18 + Vite frontend interface (`frontend/`)
+  - Real-time communication with FastAPI REST services (`GET /health`, `GET /monitoring`, `POST /predict`)
+  - 41-feature user-friendly prediction form grouped into logical climate, weather, temporal, lag, and load categories
+  - Data drift visualizer & Kolmogorov-Smirnov statistical summary report
+  - Champion MLflow model metrics comparison chart (Linear Regression vs XGBoost vs Random Forest)
+
+---
+
+## 🎨 Phase 10 — Frontend Dashboard
+
+### Overview
+Phase 10 introduces a production-ready **React + Vite MLOps Dashboard** that communicates directly with the FastAPI backend service over HTTP REST APIs.
+
+### Key Features
+- **Dashboard View**: Overview summary cards for model status, champion version, alias, and data drift flags.
+- **Interactive Prediction UI**: Dynamic input form supporting all 41 model features with benchmark preset data loading.
+- **Data Drift Monitoring View**: Visual representation of feature drift metrics, KS test significance ($\alpha = 0.05$), and stability ratios.
+- **Model Information View**: Comparative performance metrics (RMSE 59.77, MAE 27.63, R² 0.5650) with interactive Recharts bar visualization.
+- **System Health Diagnostics**: Live API readiness diagnostic table for `/`, `/health`, `/predict`, and `/monitoring`.
+
+### Quick Start Instructions
+
+1. **Start FastAPI Backend (Terminal 1)**:
+   ```bash
+   uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
+   ```
+
+2. **Start React Frontend (Terminal 2)**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. **Access Endpoints**:
+   - **Frontend UI**: [http://localhost:5173](http://localhost:5173)
+   - **Backend REST API**: [http://localhost:8000](http://localhost:8000)
+   - **Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
