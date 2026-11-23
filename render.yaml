@@ -1,0 +1,28 @@
+# Render Blueprint Specification for FastAPI Model Serving Service
+# Deploy via Render Dashboard -> Blueprints -> New Blueprint Instance
+services:
+  - type: web
+    name: energy-consumption-mlops-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MODEL_PATH
+        value: deployment_model
+      - key: MODEL_NAME
+        value: EnergyConsumptionModel
+      - key: MODEL_ALIAS
+        value: champion
+      - key: MLFLOW_DISABLE_AGENT_HINT
+        value: "1"
+      - key: CORS_ORIGINS
+        value: "http://localhost:5173,http://localhost:5175"
+      - key: CORS_ORIGIN_REGEX
+        value: "^https?://(localhost|127\\.0\\.0\\.1)(:\\d+)?$|^https://.*\\.vercel\\.app$"
+

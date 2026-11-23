@@ -20,7 +20,14 @@ htmlcov/
 # Development & EDA Notebooks
 notebooks/
 reports/figures/
-mlruns/**/plots/
+
+# MLflow Local Tracking Database & Artifact Storage (standalone model in deployment_model is used instead)
+mlruns/
+mlflow.db
+*.db
+
+# Frontend
+frontend/
 
 # Raw Datasets (Managed by DVC)
 data/raw/

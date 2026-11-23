@@ -1,0 +1,8 @@
+{
+    "total_features": 41,
+    "drifted_features": 0,
+    "drift_percentage": 0.0,
+    "overall_drift_detected": false,
+    "alpha": 0.05,
+    "timestamp": "2026-09-22T06:12:28.212025+00:00"
+}

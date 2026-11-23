@@ -44,6 +44,7 @@ dvc_storage/
 # Generated monitoring reports & figures
 reports/monitoring/*
 !reports/monitoring/.gitkeep
+!reports/monitoring/drift_summary.json
 
 # Logs & OS generated files
 *.log
